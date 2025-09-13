@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manga Lounge</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ========= THEME TOKENS =========
+       Text: #000000, Background: #ffffff, Primary: #FF8200, Secondary: #9bafdd, Accent: #187ccd
+       Font: Manrope / Weight:
+       - 24pt over: 800
+       - 18pt to <24pt: 600
+       - <18pt: 400
+    ================================== */
+    :root{
+      --color-text: #000000;
+      --color-bg: #ffffff;
+      --color-primary: #FF8200;
+      --color-secondary: #9bafdd;
+      --color-accent: #187ccd;
+
+      /* Header spec baseline: h_logo = 3 × h_tab */
+      --tab-height: 32px;
+      --logo-height: calc(var(--tab-height) * 3);
+
+      --container-max: 1200px;
+      --radius: 16px;
+      --hero-radius: 18px;
+      --shadow-sm: 0 2px 12px rgba(0,0,0,.10);
+      --shadow-md: 0 8px 28px rgba(0,0,0,.18);
+
+      /* Marker color（蛍光ペン風） */
+      --marker-bg: color-mix(in srgb, var(--color-primary), #fff 45%);
+    }
+    @media (max-width: 1024px){ :root{ --tab-height: 30px; } }
+    @media (max-width: 640px){ :root{ --tab-height: 28px; } }
+
+    /* ========= BASE ========= */
+    *,*::before,*::after{ box-sizing: border-box; }
+    html{ scroll-behavior: smooth; }
+    body{
+      margin: 0;
+      font-family: Manrope, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.65;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a{ color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible, input:focus-visible{
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    .container{ max-width: var(--container-max); margin-inline: auto; padding-inline: clamp(16px, 4vw, 32px); }
+
+    /* 強制非表示（モバイルメニューの暴発防止） */
+    [hidden]{ display: none !important; }
+
+    /* ========= HEADER ========= */
+    .site-header{ position: sticky; top: 0; z-index: 1000; background: var(--color-bg); }
+    .nav{
+      display: grid;
+      grid-template-columns: 1fr auto 1fr; /* left tabs / logo / right tabs */
+      align-items: center;
+      gap: var(--tab-height);
+      min-height: var(--logo-height);      /* h_logo = 3 * h_tab */
+    }
+    .nav-left, .nav-right{ display: flex; gap: clamp(12px, 2vw, 24px); align-items: center; }
+    .nav-left{ justify-content: flex-start; } .nav-right{ justify-content: flex-end; }
+    .nav a.nav-link{
+      display: inline-flex; align-items: center;
+      height: var(--tab-height); line-height: var(--tab-height);
+      font-size: clamp(14px, 1.2vw, 16px); font-weight: 400; letter-spacing: 0.02em;
+      padding-inline: 4px;
+    }
+    .nav a.nav-link:hover{ color: var(--color-accent); }
+    .logo-link{ display: inline-flex; align-items: center; justify-content: center; }
+    .logo{
+      /* ロゴ画像だけ 2倍（ヘッダーは必要に応じて広がる） */
+      height: calc(var(--logo-height) * 2);
+      width: auto;
+      max-width: min(50vw, 520px);
+      max-height: 40vh;
+      display: block;
+    }
+
+    /* Mobile nav */
+    .menu-toggle{ position: absolute; left: clamp(10px, 2vw, 16px); background: transparent; border: 0; padding: 8px; display: none; cursor: pointer; }
+    .menu-toggle span{ display: block; width: 22px; height: 2px; background: var(--color-text); margin-block: 4px; transition: transform .2s ease; }
+    .mobile-drawer{ display: none !important; background: var(--color-bg); border: 0 !important; }
+    @media (max-width: 860px){ .menu-toggle{ display: block; } .nav-left, .nav-right{ display: none; } .mobile-drawer[aria-hidden="false"]{ display: block !important; } }
+
+    /* ========= HERO ========= */
+    /* ヒーローをフルブリード化（コンテナ制限を外す） */
+    .hero.container{ max-width: none; padding-inline: 0; }
+
+    .hero{ padding-block: clamp(24px, 6vw, 56px); overflow-x: hidden; }
+    .hero-media{ display: flex; justify-content: center; }
+
+    .design-hero{
+      position: relative;
+      border-radius: var(--hero-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      width: 100%;                      /* ← 100vwでなくてもOK（セクションがフル幅） */
+      max-width: 1000px;                 /* ← 最大幅を800pxに制限 */
+      margin: 0 auto;                   /* ← 中央寄せ */
+      aspect-ratio: 16 / 9;
+      isolation: isolate;
+    }
+    .design-hero > img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.3);            /* 1.3倍 */
+      transform-origin: center;
+    }
+    .design-hero::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.15);      /* 黒マスク 20% */
+      pointer-events: none;
+    }
+    /* 見出し：画面左端寄せ（ただし 16px + safe-area を内側で確保）＆縦中央 */
+    .design-hero__title{
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      margin: 0;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif; /* 指定：Arial */
+      font-weight: 700;                          /* Bold */
+      text-transform: uppercase;
+      line-height: 1.08;
+      letter-spacing: .00em;
+      text-shadow: 0 2px 8px rgba(0,0,0,.30);
+      font-size: clamp(28px, 6vw, 64px);
+      max-width: 960px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(8px, env(safe-area-inset-right));
+      box-sizing: border-box;
+      width: 100%;
+      z-index: 1;                                /* ← オーバーレイより上に表示 */
+    }
+    @media (max-width: 600px){
+      .design-hero > img{ transform: scale(1.18); } /* モバイルは少し控えめ */
+    }
+
+    /* ヒーロー下のコピー：一行基準＋蛍光ペン */
+    .hero-copy{
+      text-align: center;
+      margin-top: clamp(16px, 3.5vw, 28px);
+      max-width: var(--container-max);
+      margin-left: auto; margin-right: auto;
+      padding-inline: clamp(16px, 4vw, 32px);
+    }
+    .hero-copy h1{
+      margin: 0;
+      font-size: clamp(16px, 3.2vw, 28px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      white-space: normal; /* 狭幅では折返し許容 */
+    }
+    @media (min-width: 680px){
+      .hero-copy h1{ white-space: nowrap; } /* 中～大画面は一行固定 */
+    }
+
+    /* 蛍光ペン風マーカー */
+    .marker{
+      color: inherit;
+      background: linear-gradient(var(--marker-bg), var(--marker-bg)) no-repeat;
+      background-size: 100% 0.6em;
+      background-position: 0 85%;
+      border-radius: .15em;
+      padding: 0 .06em;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+
+    /* ========= GENERIC SECTION ========= */
+    section.section{ padding-block: clamp(40px, 8vw, 80px); }
+    .section h2{ 
+      font-size: clamp(26px, 3.8vw, 40px); 
+      font-weight: 800; 
+      line-height: 1.15;
+      margin: 0 0 20px 0; 
+      letter-spacing: -0.01em; 
+      position: relative; 
+      display: inline-block;
+    }
+    .section h2::after{ 
+      content: ""; 
+      display: block; 
+      width: 80px; 
+      height: 3px; 
+      background: var(--color-primary); 
+      border-radius: 2px; 
+      margin-top: 10px; 
+    }
+
+    /* ========= PRICE SECTION ========= */
+    .price-content{ text-align: center; }
+    .price-main{ max-width: 600px; margin: 0 auto; }
+    .price-amount{ 
+      font-size: clamp(32px, 5vw, 48px); 
+      font-weight: 800; 
+      color: var(--color-text); 
+      margin: 0 0 16px 0; 
+    }
+    .price-amount .highlight{ 
+      background: linear-gradient(#187CCE, #187CCE) no-repeat;
+      background-size: 100% 0.4em;
+      background-position: 0 85%;
+      border-radius: .15em;
+      padding: 0 .06em;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+    .price-description{ 
+      font-size: clamp(16px, 2.5vw, 20px); 
+      font-weight: 600; 
+      margin: 0; 
+      color: var(--color-text);
+      opacity: .9; 
+    }
+
+    /* ========= WHAT YOU CAN DO ========= */
+    .card-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(16px, 2.6vw, 28px); }
+    @media (max-width: 980px){ .card-grid{ grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px){ .card-grid{ grid-template-columns: 1fr; } }
+    .card{ position: relative; overflow: hidden; border-radius: var(--radius); box-shadow: var(--shadow-sm); aspect-ratio: 3 / 4; background: #222; isolation: isolate; }
+    .card img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; z-index: -1; }
+    .card::after{ content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.38); z-index: -1; }
+    .card .overlay{ position: absolute; inset: 0 0 auto 0; padding: clamp(16px, 3vw, 24px); color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.4); }
+    .card h3{ margin: 0 0 6px 0; font-size: clamp(20px, 2.8vw, 26px); font-weight: 600; color: #fff; }
+    .card p{ margin: 0; font-size: clamp(15px, 2.2vw, 18px); font-weight: 400; opacity: .95; }
+    .card:where(:hover, :focus-within){ box-shadow: var(--shadow-md); }
+    .card:hover img{ transform: scale(1.03); }
+
+
+
+    /* ========= HOW TO VISIT ========= */
+    .visit{ padding-block: clamp(56px, 9vw, 96px); }
+    .visit-intro{ 
+      text-align: center; 
+      max-width: 700px; 
+      margin: 0 auto clamp(24px, 4vw, 32px) auto; 
+      font-size: clamp(15px, 2vw, 17px); 
+      line-height: 1.6; 
+      opacity: .85; 
+    }
+    .steps-list{ 
+      max-width: 800px;
+      margin: clamp(32px, 5vw, 40px) auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(16px, 2.5vw, 20px);
+    }
+    
+    .step-block{ 
+      background: #fff; 
+      border: 2px solid rgba(0,0,0,.08);
+      border-radius: 20px;
+      padding: clamp(18px, 3vw, 24px);
+      box-shadow: var(--shadow-sm);
+      transition: all .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .step-block:hover{ 
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary);
+    }
+    
+    .step-block::before{
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: var(--color-primary);
+    }
+    
+    .step-header{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .step-number{ 
+      width: 36px; 
+      height: 36px; 
+      border-radius: 12px;
+      background: var(--color-primary); 
+      color: #fff; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 16px; 
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    
+    .step-icon{
+      width: 24px;
+      height: 24px;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+    
+    .step-title{ 
+      margin: 0;
+      font-size: clamp(16px, 2.2vw, 20px); 
+      font-weight: 600; 
+      color: var(--color-text); 
+      line-height: 1.3;
+      flex: 1;
+    }
+    
+    .step-description{ 
+      margin: 0 0 0 52px;
+      font-size: clamp(14px, 1.8vw, 16px); 
+      line-height: 1.5; 
+      opacity: .8;
+    }
+    
+    @media (max-width: 600px){
+      .step-description{
+        margin-left: 0;
+        margin-top: 8px;
+      }
+    }
+
+   /* ========= FAQ ========= */
+    .faq { padding-block: clamp(64px, 10vw, 112px); }
+
+    /* 1カラム・左寄せ */
+    .faq-grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(28px, 4vw, 40px);
+      align-items: start;
+    }
+
+    /* 見出し＆下線をやや長めに */
+    .faq-head h2{
+      margin: 0 0 20px 0;
+      color: var(--color-text);
+      font-size: clamp(26px, 3.8vw, 40px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+    .faq-head h2::after{
+      content: "";
+      display: block;
+      width: clamp(140px, 18vw, 260px);
+      height: 3px;
+      background: var(--color-primary);
+      border-radius: 2px;
+      margin-top: 10px;
+    }
+
+    /* リスト中央寄せ（太め） */
+    .faq-list{
+      max-width: min(1200px, 92vw);
+      margin: clamp(24px, 4vw, 40px) auto 0;
+      text-align: left;
+    }
+
+    /* ★ 左インデントは親 .faq-item に一本化（適切な位置） */
+    .faq-item{
+      width: 100%;
+      margin: 0;
+      padding-left: 80px; /* より適切な位置に調整 */
+      box-sizing: border-box;
+    }
+
+    /* 質問ボタン（左は0） */
+    .faq-q{
+      -webkit-appearance: none; appearance: none;
+      background: transparent !important; border: 0 !important;
+      box-sizing: border-box; width: 100%;
+      padding: 18px 0;                 /* 左は0：親で付ける */
+      display: flex; align-items: center; gap: 16px;
+      text-align: left; cursor: pointer;
+      font-size: clamp(18px, 2.6vw, 20px); font-weight: 600; color: inherit;
+    }
+    .faq-q > .caret{
+      flex: 0 0 20px; width: 20px; height: 20px;
+      color: var(--color-primary); transition: transform .16s ease;
+    }
+    .faq-q[aria-expanded="true"] > .caret{ transform: rotate(180deg); }
+    .faq-q:focus, .faq-q:focus-visible{ outline: none; box-shadow: none; }
+
+    /* 区切り線：幅を完全に固定 */
+    .faq-divider{
+      height: 2px; 
+      width: 800px; /* 固定幅 */
+      max-width: calc(100vw - 100px); /* 画面幅を超えないように制限 */
+      background: color-mix(in srgb, var(--color-primary), transparent 70%);
+      margin: 0 0 0 0px; /* 親のpadding-leftと同じ位置から開始 */
+    }
+    
+    /* 最初の区切り線（見出しの下）だけ特別に位置調整 */
+    .faq-list > .faq-divider:first-child {
+      margin-left: 80px; /* 最初の線だけ80pxの位置から開始 */
+    }
+
+    /* 回答（左は0） */
+    .faq-a{ overflow: hidden; transition: height .16s ease; }
+    .faq-a[hidden]{ display: block; height: 0 !important; padding-bottom: 0 !important; }
+    .faq-a .answer{ padding: 8px 0 18px 0; max-width: 68ch; }
+
+    /* 動きの軽減 */
+    @media (prefers-reduced-motion: reduce){
+      .faq-a{ transition: none; }
+      .faq-q .caret{ transition: none; }
+    }
+
+    /* ========= CONTACT ========= */
+    .contact{ padding-block: clamp(72px, 10vw, 120px); }
+    .contact-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 48px); align-items: start; grid-template-areas: "info map"; }
+    @media (max-width: 880px){ .contact-grid{ grid-template-columns: 1fr; grid-template-areas: "map" "info"; } }
+    .contact-info{ grid-area: info; } .contact-map{ grid-area: map; }
+    .contact h2{ 
+      margin: 0 0 20px 0; 
+      font-size: clamp(26px, 3.8vw, 40px); 
+      font-weight: 800; 
+      line-height: 1.15;
+      letter-spacing: -0.01em; 
+      position: relative; 
+      display: inline-block;
+    }
+    .contact h2::after{ 
+      content: ""; 
+      display: block; 
+      width: 80px; 
+      height: 3px; 
+      background: var(--color-primary); 
+      border-radius: 2px; 
+      margin-top: 10px; 
+    }
+    .info-list{ display: grid; gap: 14px; }
+    .info-row{ display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,.08); }
+    .info-label{ font-size: 12px; text-transform: uppercase; letter-spacing: .08em; opacity: .9; margin: 0 0 4px 0; font-weight: 600; color: color-mix(in srgb, var(--color-text), #000 5%); }
+    .info-value{ margin: 0; font-size: 16px; }
+    .small-link{ display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--color-accent); }
+    .btn-row{ display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .btn{ display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; text-decoration: none; transition: transform .08s ease; }
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{ background: var(--color-primary); color: #fff; border: 1px solid color-mix(in srgb, var(--color-primary), #000 12%); }
+    .btn-ghost{ background: transparent; color: var(--color-text); border: 1px solid rgba(0,0,0,.14); }
+    .map-embed{ width: 100%; height: clamp(320px, 56vh, 640px); border: 0; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+
+    /* ========= FOOTER ========= */
+    .site-footer{ background: var(--color-bg); padding-block: clamp(48px, 8vw, 80px); }
+    .footer-grid{ display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(24px, 5vw, 48px); align-items: start; }
+    @media (max-width: 760px){ .footer-grid{ grid-template-columns: 1fr; text-align: left; } .footer-center{ order: -1; } }
+    .footer-label{ font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; margin-bottom: 6px; font-weight: 600; }
+    .footer-text{ font-size: 16px; margin-bottom: 4px; }
+    .footer-logo{ height: 96px; width: auto; display: block; margin-bottom: 10px; } /* 2倍 */
+    .social{ display: flex; gap: 14px; align-items: center; margin-bottom: 12px; }
+    .social a{ color: color-mix(in srgb, var(--color-text), #000 10%); display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; }
+    .social a:hover{ color: var(--color-accent); }
+
+    .footer-links{
+      display: grid; grid-template-columns: 1fr; gap: 10px;
+      justify-content: end; justify-items: end; text-align: right;
+    }
+    @media (max-width: 760px){ .footer-links{ justify-content:end; justify-items:end; text-align:right; } }
+    .footer-links .group{ margin-bottom: 8px; }
+    .footer-links .group-title{
+      color: var(--color-primary);
+      font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+      opacity: .9; margin-bottom: 6px; font-weight: 600;
+    }
+    .footer-links ul{ list-style: none; padding: 0; margin: 0; width: 100%; }
+    .footer-links a{ display: inline-block; padding-block: 4px; font-size: 16px; }
+    .footer-links a:hover{ color: var(--color-accent); text-decoration: underline; }
+
+    /* ナビのフォーカス枠が“棒”に見えるのを抑止（必要に応じて） */
+    .site-header a.nav-link:focus-visible, .logo-link:focus-visible{ outline: none; }
+  </style>
+</head>
+<body id="top">
+  <!-- ======= HEADER ======= -->
+  <header class="site-header">
+    <div class="container nav">
+      <!-- Left tabs -->
+      <div class="nav-left">
+        <a class="nav-link" href="#what-you-can-do">EXPERIENCE</a>
+        <a class="nav-link" href="#price">PRICE</a>
+        <a class="nav-link" href="#how-to-visit">HOW TO VISIT</a>
+      </div>
+
+      <!-- Center logo -->
+      <a class="logo-link" href="#top" aria-label="Go to top">
+        <img class="logo" src="logo_1.png" alt="Manga Lounge logo (header)" />
+      </a>
+
+      <!-- Right tabs -->
+      <div class="nav-right">
+        <a class="nav-link" href="#faq">FAQ</a>
+        <a class="nav-link" href="#contact">CONTACT</a>
+      </div>
+
+      <!-- Mobile toggle -->
+      <button class="menu-toggle" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- Mobile drawer (確実に非表示で開始) -->
+    <nav id="mobile-menu" class="mobile-drawer" aria-hidden="true" hidden>
+      <a href="#what-you-can-do">ABOUT</a>
+      <a href="#price">PRICE</a>
+      <a href="#how-to-visit">HOW TO VISIT</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">CONTACT</a>
+    </nav>
+  </header>
+
+  <!-- ======= MAIN ======= -->
+  <main>
+    <!-- ======= HERO（オーバーレイ＋左端・縦中央） ======= -->
+    <section class="hero container" aria-label="Hero">
+      <div class="hero-media">
+        <div class="design-hero">
+          <img src="picture-1.png" alt="Hanging prints and bookshelves in a Japanese pop culture bookstore" />
+          <h1 class="design-hero__title">
+            STEP OUT OF REALITY.<br>
+            STEP INTO STORY.
+          </h1>
+        </div>
+      </div>
+      <div class="hero-copy">
+        <h1>We offer <mark class="marker">unlimited manga access</mark> in a cozy setting.</h1>
+      </div>
+    </section>
+
+    <!-- ======= WHAT YOU CAN DO ======= -->
+    <section class="section container" id="what-you-can-do" aria-labelledby="wycd-title">
+      <h2 id="wycd-title">Experience</h2>
+      <div class="card-grid">
+        <article class="card">
+          <img src="picture-2.jpg" alt="Assorted manga titles spread across a table" />
+          <div class="overlay">
+            <h3>Read 10,000 Manga</h3>
+            <p>Dive into a massive library of over 10,000 manga volumes.</p>
+            <p>Discover classics, new hits, and hidden gems. Read as much as you want, anytime.</p>
+          </div>
+        </article>
+        <article class="card">
+          <img src="picture-3.jpg" alt="Close view of manga shelves and covers" />
+          <div class="overlay">
+            <h3>Snack, Sip &amp; Stay</h3>
+            <p>Grab your favorite snacks and drinks at the front—or bring your own! Settle in for a long reading session, solo or with friends.</p>
+          </div>
+        </article>
+        <article class="card">
+          <img src="picture-4.jpg" alt="Comfortable lounge space with bookshelves and seating" />
+          <div class="overlay">
+            <h3>Lounge &amp; Connect</h3>
+            <p>Chill on comfy sofas, chat about your favorite stories, and make new friends. </p>
+            <p>Perfect for groups, families, or anyone looking to share their love of manga.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======= PRICE ======= -->
+    <section class="section container" id="price" aria-labelledby="price-title">
+      <h2 id="price-title">Price</h2>
+      <div class="price-content">
+        <div class="price-main">
+          <h3 class="price-amount"><span class="highlight">$9 / hour</span></h3>
+          <p class="price-description">Unlimited manga, free Wi-Fi, cozy lounge.</p>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- ======= HOW TO VISIT ======= -->
+    <section class="section container visit" id="how-to-visit" aria-labelledby="visit-title">
+      <h2 id="visit-title">How to Visit Manga Lounge</h2>
+      <div class="visit-intro">
+        <p>Manga Lounge is a members-only space. To make your visit easy and secure, we use a digital membership card managed through our official app. Here's how to get started:</p>
+      </div>
+      <div class="steps-list">
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <path d="M7 10l5 5 5-5"/>
+              <path d="M12 15V3"/>
+            </svg>
+            <h3 class="step-title">Download the App</h3>
+          </div>
+          <p class="step-description">Get our official Manga Lounge app from the App Store or Google Play.</p>
+        </div>
+        
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <h3 class="step-title">Sign Up</h3>
+          </div>
+          <p class="step-description">Open the app and create your free account. Just enter some basic information—it only takes a minute.</p>
+        </div>
+        
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h6v6H3zM15 3h6v6h-6zM15 15h6v6h-6zM3 15h6v6H3z"/>
+              <path d="M9 3v2M3 9h2M21 9h-2M15 21v-2"/>
+            </svg>
+            <h3 class="step-title">Get Your Membership QR Code</h3>
+          </div>
+          <p class="step-description">After signing up, your unique QR code will appear in the app. This is your digital membership card.</p>
+        </div>
+        
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-number">4</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3"/>
+              <rect x="7" y="7" width="10" height="10" rx="2"/>
+            </svg>
+            <h3 class="step-title">Check In at the Entrance</h3>
+          </div>
+          <p class="step-description">When you arrive, simply show your QR code at the entrance scanner. Our staff will confirm your membership and welcome you in.</p>
+        </div>
+        
+        <div class="step-block">
+          <div class="step-header">
+            <div class="step-number">5</div>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 12h8"/>
+              <path d="M15 7l5 5-5 5"/>
+              <path d="M3 3h8v18H3z"/>
+            </svg>
+            <h3 class="step-title">Check Out When You Leave</h3>
+          </div>
+          <p class="step-description">When you're ready to leave, check out in the app or at the front desk. A summary of your stay time and corresponding charges will be displayed at the register.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= FAQ ======= -->
+    <section class="section container faq" id="faq" aria-labelledby="faq-title">
+      <div class="faq-grid">
+        <div class="faq-head"><h2 id="faq-title">Frequently Asked Questions</h2></div>
+        <div class="faq-list">
+          <div class="faq-divider" aria-hidden="true"></div>
+          <div class="faq-item" id="faq-item-1">
+            <button class="faq-q" id="faq-q-1" aria-expanded="false" aria-controls="faq-a-1">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>How can I use the service? Do I need a reservation?</span>
+            </button>
+            <div class="faq-a" id="faq-a-1" role="region" aria-labelledby="faq-q-1" hidden>
+              <div class="answer">No reservation is required. You need the app to use our service, but you can install it on the spot.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-2">
+            <button class="faq-q" id="faq-q-2" aria-expanded="false" aria-controls="faq-a-2">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>Can I visit alone?</span>
+            </button>
+            <div class="faq-a" id="faq-a-2" role="region" aria-labelledby="faq-q-2" hidden>
+              <div class="answer">Of course! You're very welcome to visit alone.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-3">
+            <button class="faq-q" id="faq-q-3" aria-expanded="false" aria-controls="faq-a-3">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>What payment methods do you accept?</span>
+            </button>
+            <div class="faq-a" id="faq-a-3" role="region" aria-labelledby="faq-q-3" hidden>
+              <div class="answer">We accept both credit cards and cash.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-4">
+            <button class="faq-q" id="faq-q-4" aria-expanded="false" aria-controls="faq-a-4">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>What are your business hours?</span>
+            </button>
+            <div class="faq-a" id="faq-a-4" role="region" aria-labelledby="faq-q-4" hidden>
+              <div class="answer">We're open from 9:00 AM to 11:00 PM.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-5">
+            <button class="faq-q" id="faq-q-5" aria-expanded="false" aria-controls="faq-a-5">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>Can I bring my own food and drinks? Do you have café service?</span>
+            </button>
+            <div class="faq-a" id="faq-a-5" role="region" aria-labelledby="faq-q-5" hidden>
+              <div class="answer">You can bring your own food and drinks. However, alcoholic beverages are not allowed. You can also purchase canned drinks and snacks at our store.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-6">
+            <button class="faq-q" id="faq-q-6" aria-expanded="false" aria-controls="faq-a-6">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>Can I leave temporarily during my visit?</span>
+            </button>
+            <div class="faq-a" id="faq-a-6" role="region" aria-labelledby="faq-q-6" hidden>
+              <div class="answer">When leaving temporarily, we will hold your ID. Please note that time charges continue to apply even while you're away.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-7">
+            <button class="faq-q" id="faq-q-7" aria-expanded="false" aria-controls="faq-a-7">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>Do you have manga in English or Japanese?</span>
+            </button>
+            <div class="faq-a" id="faq-a-7" role="region" aria-labelledby="faq-q-7" hidden>
+              <div class="answer">We only have English versions.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-8">
+            <button class="faq-q" id="faq-q-8" aria-expanded="false" aria-controls="faq-a-8">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>What kind of manga do you have?</span>
+            </button>
+            <div class="faq-a" id="faq-a-8" role="region" aria-labelledby="faq-q-8" hidden>
+              <div class="answer">We have lots! You can search for titles in our app.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-9">
+            <button class="faq-q" id="faq-q-9" aria-expanded="false" aria-controls="faq-a-9">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>Are there any age restrictions?</span>
+            </button>
+            <div class="faq-a" id="faq-a-9" role="region" aria-labelledby="faq-q-9" hidden>
+              <div class="answer">Yes, there are age restrictions. Children under 13 must be accompanied by a guardian. Some manga may be restricted for visitors under 18.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-10">
+            <button class="faq-q" id="faq-q-10" aria-expanded="false" aria-controls="faq-a-10">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>Can I purchase or borrow manga to take home?</span>
+            </button>
+            <div class="faq-a" id="faq-a-10" role="region" aria-labelledby="faq-q-10" hidden>
+              <div class="answer">No, manga can only be read in-store.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+
+          <div class="faq-item" id="faq-item-11">
+            <button class="faq-q" id="faq-q-11" aria-expanded="false" aria-controls="faq-a-11">
+              <svg class="caret" width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <span>What happens if I damage or tear a manga?</span>
+            </button>
+            <div class="faq-a" id="faq-a-11" role="region" aria-labelledby="faq-q-11" hidden>
+              <div class="answer">You will be required to pay for the damage.</div>
+            </div>
+            <div class="faq-divider" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======= CONTACT ======= -->
+    <section class="section container contact" id="contact" aria-labelledby="contact-title">
+      <div class="contact-grid">
+        <!-- Left: Info -->
+        <div class="contact-info">
+          <h2 id="contact-title">Contact</h2>
+          <div class="info-list">
+
+            <!-- Location -->
+            <div class="info-row">
+              <svg class="info-ico" width="22" height="22" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-7.33 8-12a8 8 0 1 0-16 0c0 4.67 8 12 8 12z"/><circle cx="12" cy="10" r="3"/></svg>
+              <div>
+                <p class="info-label">Location</p>
+                <p class="info-value" aria-label="2115 S Atlantic Blvd, Monterey Park, CA 91754">2115 S Atlantic Blvd, Monterey Park, CA 91754</p>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="info-row">
+              <svg class="info-ico" width="22" height="22" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+              <div>
+                <p class="info-label">Email</p>
+                <div class="btn-row">
+                  <a class="btn btn-ghost" href="mailto:info@mangalounge.com" aria-label="Email info at mangalounge dot com">
+                    <svg width="18" height="18" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg>
+                    info@mangalounge.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Call -->
+            <div class="info-row">
+              <svg class="info-ico" width="22" height="22" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.1 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.3 1.78.54 2.63a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.45-1.12a2 2 0 0 1 2.11-.45c.85.24 1.73.42 2.63.54A2 2 0 0 1 22 16.92z"/></svg>
+              <div>
+                <p class="info-label">Call</p>
+                <div class="btn-row">
+                  <a class="btn btn-ghost" href="tel:+13235550123" aria-label="Call Manga Lounge at (323) 555-0123">
+                    <svg width="18" height="18" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.1 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.3 1.78.54 2.63a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.45-1.12a2 2 0 0 1 2.11-.45c.85.24 1.73.42 2.63.54A2 2 0 0 1 22 16.92z"/></svg>
+                    (323) 555-0123
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- External: Inquiries & Careers -->
+            <div class="info-row" style="border-bottom: 0;">
+              <svg class="info-ico" width="22" height="22" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13l-3 3 3 3"/><path d="M14 7l3-3 3 3"/><path d="M3 12h7M14 12h7"/></svg>
+              <div>
+                <p class="info-label">More</p>
+                <div class="btn-row">
+                  <a class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h8"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+                    General Inquiries
+                  </a>
+                  <a class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h12v12H6z"/><path d="M8 6V4h8v2"/><path d="M8 10h8M8 14h8M8 18h8"/></svg>
+                    Careers
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Map -->
+        <div class="contact-map">
+          <iframe class="map-embed" src="https://www.google.com/maps?q=2115+S+Atlantic+Blvd,+Monterey+Park,+CA+91754&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" aria-label="Map to 2115 S Atlantic Blvd, Monterey Park, CA 91754"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======= FOOTER ======= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <!-- Left: Social then Address & Hours -->
+      <div class="footer-left">
+        <div class="social" aria-label="Social links">
+          <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+              <circle cx="12" cy="12" r="4"></circle>
+              <circle cx="17.5" cy="6.5" r="1"></circle>
+            </svg>
+          </a>
+          <a href="#" aria-label="X (Twitter)" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4l16 16M20 4L4 20"></path>
+            </svg>
+          </a>
+          <a href="#" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 3v8a4 4 0 1 1-4 4"></path>
+              <path d="M14 6c2 2 4 3 6 3"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="footer-label">Address</div>
+        <p class="footer-text" aria-label="2115 South Atlantic Boulevard, Monterey Park, California, 91754">
+          2115 S Atlantic Blvd<br>Monterey Park, CA 91754
+        </p>
+        <div class="footer-label" style="margin-top:10px;">Operation Hours</div>
+        <p class="footer-text">9AM–10PM</p>
+      </div>
+
+      <!-- Center: Logo (2x) -->
+      <div class="footer-center" aria-label="Brand">
+        <img class="footer-logo" src="logo_2.png" alt="Manga Lounge logo small">
+      </div>
+
+      <!-- Right: Links (two vertical blocks; right-aligned) -->
+      <nav class="footer-right footer-links" aria-label="Footer links">
+        <div class="group">
+          <div class="group-title">Site</div>
+          <ul>
+            <li><a href="#what-you-can-do">EXPERIENCE</a></li>
+            <li><a href="#price">PRICE</a></li>
+            <li><a href="#how-to-visit">How to Visit</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="group">
+          <div class="group-title">Legal</div>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms &amp; Conditions</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- ======= THEME PANEL (dynamic color editor) ======= -->
+  <aside class="theme-tab" style="position: fixed; right: 16px; bottom: 16px; z-index: 1200;">
+    <button class="theme-toggle" aria-expanded="false" aria-controls="theme-panel" style="background: var(--color-accent); color: #fff; border: 0; padding: 10px 14px; border-radius: 999px; box-shadow: var(--shadow-sm); cursor: pointer; font-size: 14px; font-weight: 600;">Theme</button>
+    <form id="theme-panel" class="theme-panel" hidden style="position: absolute; right: 0; bottom: calc(100% + 8px); background: var(--color-bg); border-radius: 12px; padding: 14px; width: 260px; box-shadow: var(--shadow-md); border: 1px solid rgba(0,0,0,.06);">
+      <div class="theme-row" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;"><label for="picker-text" style="font-size: 13px; font-weight: 600;">Text</label><input id="picker-text" type="color" value="#000000" data-var="--color-text" /></div>
+      <div class="theme-row" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;"><label for="picker-bg" style="font-size: 13px; font-weight: 600;">Background</label><input id="picker-bg" type="color" value="#ffffff" data-var="--color-bg" /></div>
+      <div class="theme-row" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;"><label for="picker-primary" style="font-size: 13px; font-weight: 600;">Primary</label><input id="picker-primary" type="color" value="#FF8200" data-var="--color-primary" /></div>
+      <div class="theme-row" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;"><label for="picker-secondary" style="font-size: 13px; font-weight: 600;">Secondary</label><input id="picker-secondary" type="color" value="#9bafdd" data-var="--color-secondary" /></div>
+      <div class="theme-row" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;"><label for="picker-accent" style="font-size: 13px; font-weight: 600;">Accent</label><input id="picker-accent" type="color" value="#187ccd" data-var="--color-accent" /></div>
+      <footer style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px;"><button type="button" class="ghost-btn" id="reset-theme" style="background: transparent; border: 1px solid rgba(0,0,0,.12); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px;">Reset</button><button type="button" class="ghost-btn" id="close-theme" style="background: transparent; border: 1px solid rgba(0,0,0,.12); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px;">Close</button></footer>
+    </form>
+  </aside>
+
+  <script>
+    // ===== Restore saved theme on load =====
+    (function(){
+      const keys = ['--color-text','--color-bg','--color-primary','--color-secondary','--color-accent'];
+      const root = document.documentElement;
+      try {
+        const saved = JSON.parse(localStorage.getItem('ml_theme_tokens') || '{}');
+        keys.forEach(k => { if(saved[k]) root.style.setProperty(k, saved[k]); });
+        document.querySelectorAll('.theme-panel input[type="color"]').forEach(inp => {
+          const varkey = inp.dataset.var;
+          if(saved[varkey]) inp.value = saved[varkey];
+        });
+      } catch(e){ /* no-op */ }
+    })();
+
+    // ===== Theme panel interactions =====
+    (function(){
+      const root = document.documentElement;
+      const toggleBtn = document.querySelector('.theme-toggle');
+      const panel = document.getElementById('theme-panel');
+      const closeBtn = document.getElementById('close-theme');
+      const resetBtn = document.getElementById('reset-theme');
+
+      const defaults = {
+        '--color-text': '#000000',
+        '--color-bg': '#ffffff',
+        '--color-primary': '#FF8200',
+        '--color-secondary': '#9bafdd',
+        '--color-accent': '#187ccd'
+      };
+
+      function saveTheme(){
+        const current = {};
+        Object.keys(defaults).forEach(k => current[k] = getComputedStyle(root).getPropertyValue(k).trim());
+        localStorage.setItem('ml_theme_tokens', JSON.stringify(current));
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.setAttribute('aria-expanded', String(!expanded));
+        panel.hidden = expanded;
+      });
+      closeBtn.addEventListener('click', () => {
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        panel.hidden = true;
+      });
+
+      document.querySelectorAll('.theme-panel input[type="color"]').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const key = e.target.dataset.var;
+          root.style.setProperty(key, e.target.value);
+          saveTheme();
+        });
+      });
+
+      resetBtn.addEventListener('click', () => {
+        Object.entries(defaults).forEach(([k,v]) => root.style.setProperty(k, v));
+        document.querySelectorAll('.theme-panel input[type="color"]').forEach(inp => {
+          inp.value = defaults[inp.dataset.var];
+        });
+        saveTheme();
+      });
+    })();
+
+    // ===== Mobile menu drawer（hidden で確実に制御） =====
+    (function(){
+      const toggle = document.querySelector('.menu-toggle');
+      const drawer = document.getElementById('mobile-menu');
+      if(!toggle || !drawer) return;
+
+      function setDrawer(open){
+        drawer.hidden = !open;
+        drawer.setAttribute('aria-hidden', String(!open));
+        toggle.setAttribute('aria-expanded', String(open));
+      }
+      function closeDrawer(){ setDrawer(false); }
+
+      toggle.addEventListener('click', () => setDrawer(drawer.hidden));
+      drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+      document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
+    })();
+
+    // ===== Smooth scroll with offset adjustment =====
+    (function(){
+      // ヘッダーの高さを取得（sticky headerの高さ）
+      const header = document.querySelector('.site-header');
+      const headerHeight = header ? header.offsetHeight : 0;
+      
+      // 画面の高さの1/4の位置に調整するためのオフセット
+      const viewportHeight = window.innerHeight;
+      const targetOffset = Math.floor(viewportHeight / 4);
+      
+      // ナビゲーションリンクのクリックイベントを処理
+      document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          if (href === '#top') {
+            // トップに戻る場合は通常のスクロール
+            return;
+          }
+          
+          e.preventDefault();
+          
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            // ターゲット要素の位置を計算
+            const targetRect = targetElement.getBoundingClientRect();
+            const targetTop = targetRect.top + window.pageYOffset;
+            
+            // 見出しが画面の上1/3に来るようにスクロール位置を調整
+            const scrollTo = targetTop - targetOffset;
+            
+            window.scrollTo({
+              top: Math.max(0, scrollTo), // 負の値にならないように
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    })();
+
+    // ===== FAQ Accordion（全閉→単一開） =====
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const items = [...document.querySelectorAll('.faq-item')];
+      const qs =   [...document.querySelectorAll('.faq-q')];
+
+      function closeAll(exceptId){
+        items.forEach(item => {
+          const q = item.querySelector('.faq-q');
+          const a = item.querySelector('.faq-a');
+          if(!q || !a) return;
+          if(exceptId && q.id === exceptId) return;
+          if(q.getAttribute('aria-expanded') === 'true'){
+            q.setAttribute('aria-expanded','false');
+            collapse(a);
+          }
+        });
+      }
+
+      function expand(a){
+        a.hidden = false;
+        if(prefersReduced){ a.style.height = 'auto'; return; }
+        a.style.height = '0px';
+        a.getBoundingClientRect();
+        a.style.height = a.scrollHeight + 'px';
+        a.addEventListener('transitionend', function h(){
+          a.style.height = 'auto';
+          a.removeEventListener('transitionend', h);
+        });
+      }
+
+      function collapse(a){
+        if(prefersReduced){ a.hidden = true; a.style.height = '0px'; return; }
+        a.style.height = a.scrollHeight + 'px';
+        a.getBoundingClientRect();
+        a.style.height = '0px';
+        a.addEventListener('transitionend', function h(){
+          a.hidden = true;
+          a.removeEventListener('transitionend', h);
+        });
+      }
+
+      qs.forEach(q => {
+        q.addEventListener('click', () => {
+          const a = document.getElementById(q.getAttribute('aria-controls'));
+          const expanded = q.getAttribute('aria-expanded') === 'true';
+          if(expanded){
+            q.setAttribute('aria-expanded','false');
+            collapse(a);
+          }else{
+            closeAll(q.id);
+            q.setAttribute('aria-expanded','true');
+            expand(a);
+          }
+        });
+      });
+
+      // URLハッシュで特定項目を開く (#faq-q-N / #faq-a-N)
+      (function openFromHash(){
+        const hash = window.location.hash.replace('#','');
+        if(!hash) return;
+        const m = hash.match(/(\d+)$/);
+        if(!m) return;
+        const num = m[1];
+        const q = document.getElementById('faq-q-' + num);
+        const a = document.getElementById('faq-a-' + num);
+        if(q && a){
+          closeAll(q.id);
+          q.setAttribute('aria-expanded','true');
+          expand(a);
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>
