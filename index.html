@@ -89,11 +89,13 @@
       max-width: min(50vw, 520px);
       max-height: 40vh;
       display: block;
+      object-fit: contain; /* アスペクト比を保持 */
     }
     @media (max-width: 860px){
       .logo{
         height: calc(var(--logo-height) * 1.5); /* モバイル時は少し小さめ */
         max-width: min(40vw, 400px);
+        max-height: none; /* モバイル時はmax-heightを無効化 */
       }
     }
 
@@ -165,7 +167,7 @@
 
     /* ========= HERO ========= */
     /* ヒーローをフルブリード化（コンテナ制限を外す） */
-    .hero.container{ max-width: none; padding-inline: 0; }
+    .hero.container{ max-width: none; padding-inline: clamp(16px, 4vw, 32px); }
 
     .hero{ padding-block: clamp(24px, 6vw, 56px); overflow-x: hidden; }
     .hero-media{ display: flex; justify-content: center; }
